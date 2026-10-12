@@ -1,0 +1,119 @@
+//
+//  Image+Platform.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-02-14.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI) && !os(watchOS)
+import SwiftUI
+
+/// Adds `Image Platform` functionality to `Image`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension Image {
+    /// Create an Image from a PlatformImage
+    ///
+    /// This initializer is available on all platforms that support SwiftUI.
+    ///
+    /// - Parameter platformImage: The PlatformImage to create the Image from
+    public init(platformImage: PlatformImage) {
+#if os(macOS)
+        self.init(nsImage: platformImage)
+#else
+        self.init(uiImage: platformImage)
+#endif
+    }
+
+    /// Create an Image from a PlatformImage
+    ///
+    /// This initializer is available on all platforms that support SwiftUI.
+    ///
+    /// - Parameter data: The image to create the image from
+    public init?(data: Data) {
+#if os(macOS)
+        guard let native = PlatformImage(data: data) else { return nil }
+        self.init(nsImage: native)
+#else
+        guard let native = PlatformImage(data: data) else { return nil }
+        self.init(uiImage: native)
+#endif
+    }
+
+    /// Get the platform native image
+    ///
+    /// This property is available on all platforms that support SwiftUI.
+    ///
+    /// - Returns: The platform native image, or nil if the image could not be rendered
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+    @MainActor
+    public var asNativeImage: PlatformImage? {
+        let renderer = ImageRenderer(content: self)
+        renderer.scale = 1.0
+#if os(macOS)
+        return renderer.nsImage
+#else
+        return renderer.uiImage
+#endif
+    }
+
+    /// Make the current image squared
+    ///
+    /// Makes the current image squared by fitting it into a square frame.
+    ///
+    /// - Returns: The squared image view
+    @warn_unqualified_access
+    public func square() -> some View {
+        Rectangle()
+            .aspectRatio(1, contentMode: .fit)
+            .overlay(
+                self
+                    .resizable()
+                    .scaledToFill()
+            )
+            .clipShape(Rectangle())
+    }
+}
+
+#if swift(>=5.9)
+/// Declares the `Identifiable` conformance for `PlatformImage`.
+///
+/// The conformance supplies the protocol behavior implemented by the declarations in this scope.
+extension PlatformImage: @retroactive Identifiable {
+    /// The identifier of the image.
+    ///
+    /// This is a random hash value to make PlatformImage conform to Identifiable.
+    public var id: Int {
+        UUID().hashValue
+    }
+}
+#else
+/// Declares the `Identifiable` conformance for `PlatformImage`.
+///
+/// The conformance supplies the protocol behavior implemented by the declarations in this scope.
+extension PlatformImage: Identifiable {
+    /// The identifier of the image.
+    ///
+    /// This is a random hash value to make PlatformImage conform to Identifiable.
+    public var id: Int {
+        UUID().hashValue
+    }
+}
+#endif
+
+#if DEBUG
+@available(iOS 17, macOS 14, tvOS 17, visionOS 1, *)
+#Preview("Square Image") {
+    Image(systemName: "photo.fill")
+        .square()
+        .foregroundStyle(.blue)
+        .frame(width: 180)
+        .accessibilityLabel("Square photo placeholder")
+        .padding()
+}
+#endif
+#endif

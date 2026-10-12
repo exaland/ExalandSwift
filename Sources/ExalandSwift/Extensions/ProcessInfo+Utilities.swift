@@ -1,0 +1,66 @@
+//
+//  Processinfo+Utilities.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-02-22.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+import Foundation
+
+/// Adds environment and process-state utilities to `ProcessInfo`.
+///
+/// Use these values to adapt behavior for previews, tests, debugger attachment, and other execution
+/// contexts that are not represented by the standard process information API.
+public extension ProcessInfo {
+    /// Detects if running in Xcode SwiftUI Preview mode
+    static var isSwiftUIPreview: Bool {
+#if DEBUG
+        processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+#else
+        false
+#endif
+    }
+
+    /// Detects if UI Tests are running
+    static var isUITesting: Bool {
+#if DEBUG
+        processInfo.arguments.contains("UI_TESTING")
+#else
+        false
+#endif
+    }
+
+    /// Detects if Unit Tests are running
+    static var isUnitTesting: Bool {
+#if DEBUG
+        NSClassFromString("XCTestCase") != nil ||
+        processInfo.arguments.contains { argument in
+            URL(fileURLWithPath: argument).pathExtension == "xctest"
+        }
+#else
+        false
+#endif
+    }
+
+    /// Detects if Low Power Mode is enabled
+    static var isLowPowerModeActive: Bool {
+#if os(iOS) || os(watchOS)
+        processInfo.isLowPowerModeEnabled
+#else
+        false
+#endif
+    }
+
+    /// Detects if running an iOS app on Mac
+    static var isRunningiOSAppOnMac: Bool {
+#if os(iOS)
+        processInfo.isiOSAppOnMac
+#else
+        false
+#endif
+    }
+}

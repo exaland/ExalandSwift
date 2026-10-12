@@ -1,0 +1,75 @@
+//
+//  URLSession.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-08-22.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
+/// A URL session delegate that accepts server-trust authentication challenges.
+///
+/// Use this delegate only when certificate validation is intentionally disabled.
+public final class IgnoreSSLErrorsDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+    /// Handles a server-trust authentication challenge without certificate validation.
+    /// - Parameters:
+    ///   - session: The URLSession instance
+    ///   - challenge: The URLAuthenticationChallenge instance
+    /// - Returns: The disposition and optional credential that the session should use.
+    public func urlSession(
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge
+    ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
+#if os(Linux)
+        // Not available on linux.
+        return (.performDefaultHandling, nil)
+#else
+        switch challenge.protectionSpace.authenticationMethod {
+        case NSURLAuthenticationMethodServerTrust:
+            // No trust APIs on Linux
+            let cred = challenge.protectionSpace.serverTrust.map { URLCredential(trust: $0) }
+            return (.useCredential, cred)
+        default:
+            return (.performDefaultHandling, nil)
+        }
+#endif
+    }
+}
+
+/// Adds `URLSession` functionality to `URLSession`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension URLSession {
+    /// A URLSession that ignores SSL certificate errors.
+    public static let ignoreCertificateErrors: URLSession = {
+        let sessionConfig = URLSessionConfiguration.default
+        sessionConfig.timeoutIntervalForRequest = 15.0
+        sessionConfig.timeoutIntervalForResource = 30.0
+
+        return URLSession(
+            configuration: sessionConfig,
+            delegate: IgnoreSSLErrorsDelegate(),
+            delegateQueue: nil
+        )
+    }()
+
+    /// A URLSession that ignores SSL certificate errors.
+    public static let unsafe: URLSession = {
+        let sessionConfig = URLSessionConfiguration.default
+        sessionConfig.timeoutIntervalForRequest = 15.0
+        sessionConfig.timeoutIntervalForResource = 30.0
+
+        return URLSession(
+            configuration: sessionConfig,
+            delegate: IgnoreSSLErrorsDelegate(),
+            delegateQueue: nil
+        )
+    }()
+}

@@ -1,0 +1,158 @@
+//
+//  View+showError.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-01-10.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+/// Adds `View Error` functionality to `View`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension View {
+    /// Show an error message if there is any.
+    ///
+    /// This allows you to show an error message if there is any.
+    ///
+    /// Usage:
+    /// ```swift
+    /// struct ContentView: View {
+    ///     @State private var error: Error?
+    ///
+    ///     var body: some View {
+    ///         VStack {
+    ///             Text("Hello World!")
+    ///                 .padding()
+    ///         }
+    ///         .task {
+    ///             do {
+    ///                 throw CustomError(message: "This is a custom error message")
+    ///             } catch {
+    ///                 error = error
+    ///             }
+    ///         }
+    ///         .showError(error: $error)
+    ///     }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - error: A binding to the error to present. The binding is cleared when the alert is dismissed.
+    ///   - buttonTitle: The localized title of the dismissal button.
+    ///   - action: An optional action to execute after dismissing the alert.
+    /// - Returns: A view that presents an alert while `error` contains a value.
+    @ViewBuilder
+    public func showError(
+        error: Binding<Error?>,
+        buttonTitle: LocalizedStringKey = "Ok",
+        action: (() -> Void)? = nil
+    ) -> some View {
+        alert(
+            error.wrappedValue?.localizedDescription ?? "Unknown error",
+            isPresented: .constant(error.wrappedValue != nil)
+        ) {
+            Button(buttonTitle) {
+                error.wrappedValue = nil
+                action?()
+            }
+        }
+        .modify { alert in
+#if os(macOS)
+            if #available(macOS 13.0, *) {
+                alert.dialogSeverity(.critical)
+            } else {
+                alert
+            }
+#else
+            alert
+#endif
+        }
+    }
+}
+
+/// Create a (custom) error.
+///
+/// This allows you to create a custom error message.
+///
+/// Usage:
+/// ```swift
+/// CustomError(message: "This is a custom error message")
+/// ```
+public struct CustomError: Error, CustomNSError, Equatable {
+    let message: String
+    /// The application-specific error code.
+    public let errorCode: Int
+    /// The domain that identifies the source of the error.
+    public let errorDomain: String
+    /// User-facing metadata containing the localized error message.
+    public var errorUserInfo: [String: Any] {
+        [NSLocalizedDescriptionKey: message]
+    }
+
+    /// Create a (custom) error.
+    ///
+    /// This allows you to create a custom error message.
+    ///
+    /// - Parameters:
+    ///   - message: The error message.
+    ///   - errorCode: The application-specific error code.
+    ///   - domain: The domain that identifies the source of the error.
+    public init(message: String, errorCode: Int = 1, domain: String = "ExalandSwift.CustomError") {
+        self.message = message
+        self.errorCode = errorCode
+        self.errorDomain = domain
+    }
+
+    /// Create a (custom) error.
+    ///
+    /// This allows you to create a custom error message.
+    ///
+    /// - Parameters:
+    ///   - message: The localized error message.
+    ///   - errorCode: The application-specific error code.
+    ///   - domain: The domain that identifies the source of the error.
+    public init(message: LocalizedStringKey, errorCode: Int = 1, domain: String = "ExalandSwift.CustomError") {
+        self.message = message.stringValue
+        self.errorCode = errorCode
+        self.errorDomain = domain
+    }
+}
+
+/// Declares the `LocalizedError` conformance for `CustomError`.
+///
+/// The conformance supplies the protocol behavior implemented by the declarations in this scope.
+extension CustomError: LocalizedError {
+    /// A localized message describing what error occurred.
+    ///
+    /// This is the error message wrapped in a `LocalizedStringKey`.
+    public var errorDescription: String? {
+        NSLocalizedString(message, comment: "")
+    }
+}
+
+#if DEBUG
+@available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+private struct ShowErrorPreview: View {
+    @State private var error: Error? = CustomError(message: "The preview operation failed.")
+
+    var body: some View {
+        Button("Show example error") {
+            error = CustomError(message: "The preview operation failed.")
+        }
+        .accessibilityHint("Presents a local example error alert")
+        .showError(error: $error)
+        .padding()
+    }
+}
+
+@available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+#Preview("Error Alert") {
+    ShowErrorPreview()
+}
+#endif
+#endif

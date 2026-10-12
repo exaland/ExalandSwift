@@ -1,0 +1,78 @@
+//
+//  SEChangeLogView.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-02-09.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI)
+import PreferenceKit
+import SwiftUI
+
+/// ExalandSwift Change Log View
+///
+/// ExalandSwift Change Log View is a SwiftUI View that can be used to show a change log.
+@available(*, deprecated, renamed: "PreferenceKitChangeLogView")
+public struct SEChangeLogView: View {
+    /// The change log entries to display.
+    public var changeLog: [SEChangeLogEntry]
+
+    /// The list of change-log entries.
+    public var body: some View {
+        List {
+            ForEach(changeLog) { changeLogEntry in
+                Section {
+                    Text(.init(changeLogEntry.text))
+                } header: {
+                    HStack {
+                        Group {
+                            Text("Version", bundle: Bundle.module) +
+                            Text(" ") +
+                            Text(.init(changeLogEntry.version))
+                        }
+                        .lineLimit(1)
+
+                        if let date = changeLogEntry.date {
+                            Spacer()
+
+                            Text(date)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle(Text("Changelog", bundle: Bundle.module))
+#if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+#endif
+    }
+
+    /// Initialize a new change log view.
+    ///
+    /// - Parameters:
+    ///   - changeLog: The change log entries to display.
+    public init(changeLog: [SEChangeLogEntry]) {
+        self.changeLog = changeLog
+    }
+}
+
+#if DEBUG
+@available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+#Preview {
+    NavigationStack {
+        PreferenceKitChangeLogView(changeLog: [
+            .init(
+                version: "1.0.0",
+                date: "13-08-2026",
+                text: "Initial version"
+            )
+        ])
+    }
+}
+#endif
+#endif

@@ -1,0 +1,32 @@
+//
+//  Logger+.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-04-26.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(OSLog)
+import OSLog
+
+/// Adds `Logger ` functionality to `Logger`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension Logger {
+    /// Start a logger with default values
+    /// subsystem: Bundle.main.bundleIdentifier
+    /// catefory: #function (or class when called from a class)
+    ///
+    /// - Parameter default: Set this to whatever you want
+    /// - Parameter category: #function
+    public init(default: Any = true, category: StaticString = #function) {
+        self.init(
+            subsystem: Bundle.main.bundleIdentifier ?? "nl.wesleydegroot",
+            category: String(describing: category)
+        )
+    }
+}
+#endif

@@ -1,0 +1,73 @@
+//
+//  View+Log.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-01-10.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+/// Adds `View Log` functionality to `View`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension View {
+    /// Log
+    /// This enables:
+    ///
+    ///  ```swift
+    ///  SomeSwiftUIView()
+    ///     .log {
+    ///         // Code you need to run
+    ///     }
+    ///  ```
+    ///
+    /// - Parameter closure: Code need to run
+    /// - Returns: self
+    public func log(_ closure: () -> Void) -> some View {
+        closure()
+        return self
+    }
+
+    /// Debug print
+    ///
+    /// This enables:
+    ///  ```swift
+    ///  SomeSwiftUIView()
+    ///     .debugPrint("Some debug info")
+    ///  ```
+    ///  - Parameter item: Item to print
+    /// - Returns: self
+    public func debugPrint(_ item: Any) -> some View {
+        print(item)
+        return self
+    }
+
+    /// Debug print with closure
+    ///
+    /// This enables:
+    ///  ```swift
+    ///  SomeSwiftUIView()
+    ///     .printValues { "My debug info: \(someVariable)" }
+    ///  ```
+    ///  - Parameter closure: Code need to run, the result will be printed
+    /// - Returns: self
+    public func printValues(_ closure: () -> Any) -> some View {
+        print(closure())
+        return self
+    }
+}
+
+#if DEBUG
+@available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+#Preview("Logging Modifier") {
+    Label("Logging leaves content unchanged", systemImage: "text.bubble")
+        .log { }
+        .padding()
+}
+#endif
+#endif

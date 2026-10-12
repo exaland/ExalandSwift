@@ -1,0 +1,59 @@
+//
+//  Binding+optional.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2026-02-01.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+/// Adds optional-binding adapters for SwiftUI state.
+///
+/// The adapters safely derive bindings for optional values, allowing controls to participate in SwiftUI's
+/// binding APIs without force unwrapping missing state.
+public extension Binding {
+    /// Provides a binding that unwraps an optional binding, providing a default value if the optional is nil.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// @State var optionalString: String?
+    /// var body: some View {
+    ///     let unwrappedBinding = $optionalString ?? "Default Value"
+    ///     TextField("Enter text", text: unwrappedBinding)
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - lhs: The optional binding to unwrap.
+    ///   - rhs: The default value to use if the optional is nil.
+    /// - Returns: A binding to the unwrapped value or the default value.
+    static func ?? (lhs: Binding<Value?>, rhs: Value) -> Binding<Value> {
+        Binding {
+            lhs.wrappedValue ?? rhs
+        } set: {
+            lhs.wrappedValue = $0
+        }
+    }
+
+    /// Create a read-only Binding for an optional source
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Binding(for: myOptionalValue?)
+    /// ```
+    ///
+    /// - Parameter source: optional source value
+    /// - Returns: read-only Binding
+    init<T>(for source: T?) where Value == T? {
+        self.init(
+            get: { source },
+            set: { _, _ in }
+        )
+    }
+}
+#endif

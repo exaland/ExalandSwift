@@ -1,0 +1,96 @@
+//
+//  View+detachedTask.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-01-10.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+/// Adds `View Task` functionality to `View`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension View {
+    /// Run a task detached from the current task
+    ///
+    /// Use this modifier to run a task detached from the current task.
+    ///
+    /// Usage:
+    /// ```swift
+    /// .detachedTask {
+    ///     print("Hello World!")
+    /// }
+    /// ```
+    ///
+    /// - Parameter task: Task to run
+    /// - Parameter priority: Priority of the task
+    /// - Returns: self
+    public func detachedTask(
+        priority: TaskPriority = .background,
+        _ task: @escaping @MainActor () async -> Void
+    ) -> some View {
+        self.task {
+            await Task.detached(priority: priority) {
+                // Do nonisolated, Sendable work here.
+            }.value
+
+            await task()
+        }
+    }
+    /// Executes the given action after the specified delay unless
+    /// the task is cancelled.
+    ///
+    /// - Parameters:
+    ///   - delay: The duration to wait before executing the task.
+    ///   - action: The asynchronous action to execute.
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    public func task(
+        delay: ContinuousClock.Duration,
+        _ action: @Sendable @escaping () async -> Void
+    ) -> some View {
+        self.task {
+            do {
+                try await Task.sleep(for: delay)
+                await action()
+            } catch {
+                // do nothing
+            }
+        }
+    }
+
+    /// Executes the given action after the specified delay unless
+    /// the task is cancelled.
+    ///
+    /// - Parameters:
+    ///   - delay: The duration to wait before executing the task.
+    ///   - action: The asynchronous action to execute.
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    public func task(
+        after delay: ContinuousClock.Duration,
+        _ action: @Sendable @escaping () async -> Void
+    ) -> some View {
+        self.task {
+            do {
+                try await Task.sleep(for: delay)
+                await action()
+            } catch {
+                // do nothing
+            }
+        }
+    }
+}
+
+#if DEBUG
+@available(iOS 16, macOS 13, tvOS 16, visionOS 1, watchOS 9, *)
+#Preview("Delayed Task") {
+    Label("Delayed task fixture", systemImage: "clock")
+        .task(delay: .seconds(60)) { }
+        .padding()
+}
+#endif
+#endif

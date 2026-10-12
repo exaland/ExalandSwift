@@ -1,0 +1,24 @@
+//
+//  Collection+.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-03-16.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(Foundation)
+import Foundation
+
+/// Declares the `BinaryInteger` conformance for `Collection where Element`.
+///
+/// The conformance supplies the protocol behavior implemented by the declarations in this scope.
+extension Collection where Element: BinaryInteger {
+    /// Returns the average of all elements in the array
+    public func average() -> Element { isEmpty ? .zero : sum() / Element(count) }
+    /// Returns the average of all elements in the array as Floating Point type
+    public func average<T: FloatingPoint>() -> T { isEmpty ? .zero : T(sum()) / T(count) }
+}
+#endif

@@ -1,0 +1,125 @@
+//
+//  View+readOffsetX.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-01-10.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+/// Adds `View readOffsetX` functionality to `View`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension View {
+    /// Read the offset of the view
+    /// - Parameter offsetX: offset of view
+    /// - Returns: self
+    public func read(offsetX: Binding<CGFloat>) -> some View {
+        self
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .preference(
+                            key: ViewOffsetXKey.self,
+                            value: proxy.frame(in: .global).minX
+                        )
+                }
+                    .onPreferenceChange(ViewOffsetXKey.self) { minX in
+                        let diff = abs(offsetX.wrappedValue - minX)
+                        if diff > 1.0 {
+                            offsetX.wrappedValue = minX
+                        }
+                    }
+            )
+    }
+}
+
+struct ViewOffsetXKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    /// Combines child preference values into the accumulated preference value.
+    ///
+    /// SwiftUI calls this while propagating preferences through the view hierarchy.
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+/// Save the frame of the view
+struct ReadFrameModifier: ViewModifier {
+    @Binding var frame: CGRect
+
+    /// Builds the view hierarchy represented by this declaration.
+    ///
+    /// SwiftUI evaluates this when it needs the current visual representation.
+    func body(content: Content) -> some View {
+        content
+            .background(
+                GeometryReader { proxy in
+                    if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+                        Color.clear
+                            .onAppear {
+                                frame = proxy.frame(in: .global)
+                            }
+                            .onChange(of: proxy.size) {
+                                frame = proxy.frame(in: .global)
+                            }
+                    } else {
+                        Color.clear
+                            .onAppear {
+                                frame = proxy.frame(in: .global)
+                            }
+                            .onChange(of: proxy.size) { _ in
+                                frame = proxy.frame(in: .global)
+                            }
+                    }
+                }
+            )
+    }
+}
+
+/// Adds `View readOffsetX` functionality to `View`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension View {
+    /// Save the frame of the view
+    /// - Parameter frame: frame of view
+    /// - Returns: self
+    public func read(frame: Binding<CGRect>) -> some View {
+        modifier(ReadFrameModifier(frame: frame))
+    }
+}
+
+#if DEBUG
+@available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+private struct ReadGeometryPreview: View {
+    @State private var offsetX: CGFloat = 0
+    @State private var frame = CGRect.zero
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("Measured example")
+                .padding()
+                .background(.blue.opacity(0.15), in: RoundedRectangle(cornerRadius: 12))
+                .read(offsetX: $offsetX)
+                .read(frame: $frame)
+
+            Text("X: \(offsetX, format: .number.precision(.fractionLength(0)))")
+            Text("Size: \(frame.width, format: .number.precision(.fractionLength(0))) × ")
+                + Text("\(frame.height, format: .number.precision(.fractionLength(0)))")
+        }
+        .padding()
+    }
+}
+
+@available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+#Preview("Read Geometry") {
+    ReadGeometryPreview()
+}
+#endif
+#endif

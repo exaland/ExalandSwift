@@ -1,0 +1,34 @@
+//
+//  View+getRootViewController.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-01-10.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI) && canImport(UIKit) && !os(watchOS)
+import SwiftUI
+
+/// Adds `View getRootViewController` functionality to `View`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension View {
+    /// Get root view controller
+    ///
+    /// - Returns: Root view controller
+    public func getRootViewController() -> UIViewController {
+        guard let screen = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            return .init()
+        }
+
+        guard let root = screen.windows.first?.rootViewController else {
+            return .init()
+        }
+
+        return root
+    }
+}
+#endif

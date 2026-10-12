@@ -1,0 +1,25 @@
+//
+//  String+slugified.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-01-10.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+import Foundation
+
+/// Adds `String slugified` functionality to `String`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension String {
+    /// Slugify a string
+    public var slugified: String {
+        let input = self
+        let lowercased = input.lowercased()
+        let trimmed = lowercased.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.replacingOccurrences(of: " ", with: "-")
+    }
+}

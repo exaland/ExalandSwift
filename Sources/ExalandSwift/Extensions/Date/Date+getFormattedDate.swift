@@ -1,0 +1,35 @@
+//
+//  Date+getFormattedDate.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-02-21.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+import Foundation
+
+/// Adds `Date getFormattedDate` functionality to `Date`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension Date {
+    /// Get a formatted date
+    ///
+    /// This function will return a formatted date
+    ///
+    /// Example:
+    /// ```
+    /// let date = Date()
+    /// print(date.formatted("yyyy-MM-dd")) // 2025-02-21
+    /// ```
+    ///
+    /// - Parameter format: The format you want to use
+    /// - Returns: The formatted date
+    public func formatted(_ format: String) -> String {
+        let dateformat = DateFormatter()
+        dateformat.dateFormat = format
+        return dateformat.string(from: self)
+    }
+}

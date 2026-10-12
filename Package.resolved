@@ -1,0 +1,24 @@
+{
+  "originHash" : "438356d467cee9cc5d0f57569b1eeb2753596b8dd312885f45156f0972281080",
+  "pins" : [
+    {
+      "identity" : "oslogviewer",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/exaland/OSLogViewer.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "d1170a311c2a8e6a643bf0b5f5d5849d602e72be"
+      }
+    },
+    {
+      "identity" : "preferencekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/exaland/PreferenceKit.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "5c889d37629b0a824c0f25a3f93587b017929fa2"
+      }
+    }
+  ],
+  "version" : 3
+}

@@ -1,0 +1,111 @@
+//
+//  Button+longPress.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-02-22.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+/// A button style that triggers an action on long press.
+/// This style allows you to create a button that responds to long press gestures.
+/// It scales down the button when pressed and executes the provided action on long press.
+struct LongPressButtonStyle: PrimitiveButtonStyle {
+    /// An action to execute on long press
+    let longPressAction: () -> Void
+
+    /// Whether the button is being pressed
+    @State var isPressed: Bool = false
+
+    /// Creates a view that applies the long press button style.
+    ///
+    /// - Parameter configuration: The configuration for the button.
+    ///
+    /// - Returns: A view that applies the long press button style.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Button("Long Press Me") { print("Short pressed") }
+    ///     .buttonStyle(LongPressButtonStyle(longPressAction: { print("Long pressed!") }))
+    /// ```
+    func makeBody(configuration: Configuration) -> some View {
+        Button {
+            configuration.trigger()
+        } label: {
+            configuration.label
+                .scaleEffect(self.isPressed ? 0.9 : 1.0)
+        }
+        .buttonStyle(.plain)
+        .simultaneousGesture(
+            LongPressGesture()
+                .onChanged { _ in
+                    self.isPressed = true
+                }
+                .onEnded { _ in
+                    self.isPressed = false
+                    self.longPressAction()
+                }
+            )
+    }
+}
+
+//// A view modifier that applies a long press action to a view.
+struct LongPressModifier: ViewModifier {
+    /// The action to perform on long press.
+    let longPressAction: () -> Void
+
+    /// Applies the long press button style to the content.
+    ///
+    /// - Parameter content: The content to apply the modifier to.
+    ///
+    /// - Returns: A view that applies the long press button style.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Button("Long Press Me") { print("Short pressed") }
+    ///     .buttonStyle(LongPressButtonStyle(longPressAction: { print("Long pressed!") }))
+    /// ```
+    func body(content: Content) -> some View {
+        content.buttonStyle(LongPressButtonStyle(longPressAction: self.longPressAction))
+    }
+}
+
+/// Adds `Button longPress` functionality to `View`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension View {
+    /// Adds a long press action to the view.
+    ///
+    /// - Parameter action: The action to perform on long press.
+    ///
+    /// - Returns: A view that applies the long press action.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Text("Long Press Me")
+    ///     .longPress {
+    ///         print("Long pressed!")
+    ///     }
+    /// ```
+    public func longPress(action: @escaping () -> Void) -> some View {
+        modifier(LongPressModifier(longPressAction: action))
+    }
+}
+
+#if DEBUG
+@available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+#Preview {
+    VStack {
+        Button("Long Press Me") { print("Short pressed") }
+             .buttonStyle(
+                LongPressButtonStyle(longPressAction: { print("Long pressed!") })
+             )
+    }
+}
+#endif
+#endif

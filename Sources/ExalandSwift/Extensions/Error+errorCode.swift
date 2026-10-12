@@ -1,0 +1,33 @@
+//
+//  Error+errorCode.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-07-19.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+import Foundation
+
+/// Adds `Error errorCode` functionality to `Error`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension Error {
+    /// Returns the error code of the error if it is an NSError.
+    /// If the error is not an NSError, this will return nil.
+    /// This is useful for extracting error codes from errors that conform to the NSError protocol.
+    /// 
+    /// Example usage:
+    /// ```swift
+    /// let error: Error = NSError(domain: "nl.wesleydegroot.ExalandSwift", code: 404, userInfo: nil)
+    /// if let code = error.errorCode {
+    ///     print("Error code: \(code)") // Output: Error code: 404
+    /// }
+    /// ```
+    /// - Returns: The error code if the error is an NSError, otherwise nil.
+    public var errorCode: Int? {
+        (self as NSError).code
+    }
+}

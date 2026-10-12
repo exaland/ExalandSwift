@@ -1,0 +1,131 @@
+//
+//  MultiSelectPickerView.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-01-10.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+/// MultiSelectPickerView
+///
+/// This is a picker view that allows you to select multiple items from a list.
+/// It displays a list of items, each with a checkbox that allows you to select or deselect it.
+public struct MultiSelectPickerView<PickerLabel: View, SelectionLabel: View>: View {
+    /// The list of all items to read from
+    private let sourceItems: [String]
+
+    /// The values we want to track
+    @Binding private var selectedItems: [String]
+
+    /// The picker label
+    private let pickerLabel: () -> PickerLabel
+
+    /// The label for each item
+    private let selectionLabel: (_ item: String) -> SelectionLabel?
+
+    /// MultiSelectPickerView
+    ///
+    /// This is a picker view that allows you to select multiple items from a list.
+    /// It displays a list of items, each with a checkbox that allows you to select or deselect it.
+    ///
+    /// Usage:
+    /// ```
+    /// NavigationLink {
+    ///     List {
+    ///         MultiSelectPickerView(
+    ///             sourceItems: items,
+    ///             selectedItems: $selectedItems) {
+    ///                 Text("Pick your items")
+    ///             } selectionLabel: { item in
+    ///                 Label(item, systemImage: item)
+    ///             }
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// The `label` parameter is optional, and defaults to a text view.
+    ///
+    /// Parameters:
+    /// - sourceItems: The list of all items to read from.
+    /// - selectedItems: A binding to the values we want to track.
+    /// - pickerLabel: A closure that returns a label for the picker.
+    /// - selectionLabel: A closure that returns a label for each item.
+    public init(
+        sourceItems: [String],
+        selectedItems: Binding<[String]>,
+        @ViewBuilder pickerLabel: @escaping () -> PickerLabel,
+        @ViewBuilder selectionLabel: @escaping (_ item: String) -> SelectionLabel? = { item in
+            Text(item)
+        }
+    ) {
+        self.sourceItems = sourceItems
+        self._selectedItems = selectedItems
+        self.pickerLabel = pickerLabel
+        self.selectionLabel = selectionLabel
+    }
+
+    /// The body of the view
+    public var body: some View {
+        NavigationLink {
+            Form {
+                List {
+                    ForEach(sourceItems, id: \.self) { item in
+                        Button {
+                            if self.selectedItems.contains(item) {
+                                self.selectedItems.removeAll(where: { $0 == item })
+                            } else {
+                                self.selectedItems.append(item)
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "checkmark")
+                                    .opacity(
+                                        self.selectedItems.contains(item)
+                                        ? 1.0
+                                        : 0.0
+                                    )
+                                    .foregroundStyle(Color.accentColor)
+                                    .accessibilityLabel("Selected")
+
+                                selectionLabel(item)
+                            }
+                        }
+                        .foregroundColor(.primary)
+                    }
+                }
+            }
+#if os(iOS)
+            .listStyle(.grouped)
+#endif
+        } label: {
+            pickerLabel()
+        }
+    }
+}
+
+#if DEBUG
+@available(iOS 17, macOS 14, tvOS 17, visionOS 1, watchOS 10, *)
+#Preview {
+    @Previewable @State var selectedItems: [String] = []
+    let items = ["star", "person", "rainbow"]
+
+    NavigationStack {
+        List {
+            MultiSelectPickerView(
+                sourceItems: items,
+                selectedItems: $selectedItems) {
+                    Text("Pick your items")
+            } selectionLabel: { item in
+                    Label(item, systemImage: item)
+            }
+        }
+    }
+}
+#endif
+#endif

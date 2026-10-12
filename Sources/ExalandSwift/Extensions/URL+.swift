@@ -1,0 +1,71 @@
+//
+//  URL+.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-08-22.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
+/// Adds `URL ` functionality to `URL`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension URL {
+    /// Creates a URL, adding the `https` scheme when one is not provided.
+    ///
+    /// - Parameter urlString: The URL string, which may already contain a scheme.
+    public init?(safeString urlString: String) {
+        if urlString.contains("://") {
+            self.init(string: urlString)
+        } else {
+            self.init(string: "https://\(urlString)")
+        }
+    }
+
+    /// Is the URL valid for being a website (contains a scheme and host)
+    public var isWebURL: Bool {
+        guard let scheme = scheme?.lowercased() else {
+            return false
+        }
+
+        return ["http", "https"].contains(scheme) && !(host?.isEmpty ?? true)
+    }
+
+    /// Is the URL valid for being a website (contains a scheme and host)
+    public var isValid: Bool {
+        self.isWebURL
+    }
+
+    /// Check if the URL is reachable by performing a HEAD request.
+    /// - Returns: A Boolean value indicating whether the URL is reachable.
+    public func isReachable() async -> Bool {
+        var request = URLRequest(url: self)
+        request.httpMethod = "HEAD"
+
+        do {
+            let (_, response) = try await URLSession.ignoreCertificateErrors.data(for: request)
+            return (response as? HTTPURLResponse)?.statusCode == 200
+        } catch {
+            return false
+        }
+    }
+
+    /// Check if the URL is reachable by performing a HEAD request.
+    /// - Parameters:
+    ///   - completion: A closure that is called with the result of the request.
+    public func isReachable(completion: @escaping (Bool) -> Void) {
+        var request = URLRequest(url: self)
+        request.httpMethod = "HEAD"
+        URLSession.ignoreCertificateErrors.dataTask(with: request) { _, response, _ in
+            completion((response as? HTTPURLResponse)?.statusCode == 200)
+        }
+        .resume()
+    }
+}

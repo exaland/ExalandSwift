@@ -1,0 +1,30 @@
+//
+//  NSPasteboard+string.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-02-14.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if os(macOS)
+import AppKit
+
+/// Adds `NSPasteboard string` functionality to `NSPasteboard`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension NSPasteboard {
+    /// get/set the string contents of the pasteboard.
+    /// - Note: This is a wrapper around `setString(_:forType:)` and `string(forType:)`.
+    public var string: String? {
+        get { string(forType: .string) }
+        set {
+            clearContents()
+            guard let newValue else { return }
+            setString(newValue, forType: .string)
+        }
+    }
+}
+#endif

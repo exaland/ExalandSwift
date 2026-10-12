@@ -1,0 +1,91 @@
+//
+//  PlatformColor+.swift
+//  ExalandSwift
+//
+//  Created by Wesley de Groot on 2025-07-19.
+//  https://wesleydegroot.nl
+//
+//  https://github.com/0xWDG/ExalandSwift
+//  MIT License
+//
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+/// Adds `PlatformColor ` functionality to `PlatformColor`.
+///
+/// The declarations in this scope provide focused utilities while preserving the type’s standard behavior.
+extension PlatformColor {
+    /// Get the hex value of a color
+    /// - Returns: A string representation of the color in hexadecimal format.
+    public var hex: String {
+        let description = String(describing: self.description)
+        return String(description.dropLast(2))
+    }
+
+    /// RGB Hex value of a color
+    /// - Returns: A string representation of the color in hexadecimal format.
+    public var rgbHex: String {
+        String(
+            format: "#%02x%02x%02x",
+            Int(self.redValue * 255),
+            Int(self.greenValue * 255),
+            Int(self.blueValue * 255)
+        )
+    }
+
+    /// Get the red value of a color
+    /// - Returns: The normalized red component.
+    public var redValue: CGFloat {
+#if os(macOS)
+        return self.redComponent
+#else
+        var red: CGFloat = .zero
+        return getRed(&red, green: nil, blue: nil, alpha: nil) ? red : 0
+#endif
+    }
+
+    /// Get the green value of a color
+    /// - Returns: The normalized green component.
+    public var greenValue: CGFloat {
+#if os(macOS)
+        return self.greenComponent
+#else
+        var green: CGFloat = .zero
+        return getRed(nil, green: &green, blue: nil, alpha: nil) ? green : 0
+#endif
+    }
+
+    /// Get the blue value of a color
+    /// - Returns: The normalized blue component.
+    public var blueValue: CGFloat {
+#if os(macOS)
+        return self.blueComponent
+#else
+        var blue: CGFloat = .zero
+        return getRed(nil, green: nil, blue: &blue, alpha: nil) ? blue : 0
+#endif
+    }
+
+    /// Get the alpha value of a color
+    /// - Returns: The normalized alpha component.
+    public var alphaValue: CGFloat {
+#if os(macOS)
+        return self.alphaComponent
+#else
+        var alpha: CGFloat = .zero
+        return getRed(nil, green: nil, blue: nil, alpha: &alpha) ? alpha : 0
+#endif
+    }
+
+    /// Get the (6) hex color from the current
+    public var hex6: String {
+        String(
+            format: "#%02x%02x%02x",
+            Int(self.redValue * 255),
+            Int(self.greenValue * 255),
+            Int(self.blueValue * 255)
+        )
+    }
+}
+#endif
